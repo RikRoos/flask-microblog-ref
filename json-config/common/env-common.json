@@ -1,0 +1,15 @@
+{
+        "mail" : { "enabled" : true },
+
+        "app"  : { "languages" : ["en", "nl"],
+                   "posts_per_page" : 10,
+                   "wintitles" : { "index" : "Home Page",
+                                   "register" : "Register to the Microblog",
+                                   "login" : "Sign in to the Microblog",
+                                   "explore" : "Explore All Posts",
+                                   "password_reset_request" : "Reset Password",
+                                   "edit_profile" : "Edit Your Profile",
+                                   "search" : "Search" 
+                                 }
+                 }
+}

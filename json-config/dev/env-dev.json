@@ -1,0 +1,7 @@
+{
+        "app"      : { "posts_per_page" :  20,
+                       "wintitles" : { "login" : "Login title" }
+                     },
+
+        "mail" : { "enabled" : false }
+}
