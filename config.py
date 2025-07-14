@@ -3,6 +3,7 @@ import json
 import pprint
 import sys
 from app.utils import print_console
+from dotenv import load_dotenv
 from collections import ChainMap
 
 
@@ -66,12 +67,16 @@ def init_config(*config_filepath):
                 else:
                     cfgvars.append( (k, v) )
 
+    load_dotenv()
+    config_filepaths = os.environ['JSON_CONFIG_FILES'].split(';')
+
     config_dicts = []
     config_vars = []
 
+
     # read all json files in seperat dicts
 
-    for fpath in config_filepath:
+    for fpath in config_filepaths:
         config_dicts.append(load_settings(fpath))
 
     chained_configs = chain_maps(config_dicts)
@@ -105,5 +110,5 @@ def init_config(*config_filepath):
 
 # init the config during loading
 print_console("running config.py")
-init_config(*sys.argv[1:])
+init_config()
 
