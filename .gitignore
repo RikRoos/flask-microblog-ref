@@ -3,6 +3,7 @@ logs/
 *secrets*.json
 *secrets*.cfg
 *secrets*.toml
+*.bck
 
 
 # Byte-compiled / optimized / DLL files
