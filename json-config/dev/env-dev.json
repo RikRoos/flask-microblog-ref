@@ -3,5 +3,5 @@
                        "wintitles" : { "login" : "Login title" }
                      },
 
-        "mail" : { "enabled" : false }
+        "mail" : { "enabled" : true }
 }

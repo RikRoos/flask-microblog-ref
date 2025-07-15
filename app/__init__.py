@@ -65,7 +65,7 @@ def create_app(config_class=Config):
         mail_handler.setLevel(logging.ERROR)
         app.logger.addHandler(mail_handler)
     else:
-        print_console("mail is disbaled by config-setting, debugging or testing")
+        print_console("mail is disabled by config-setting, debugging or testing")
 
     # write rotating logfile
     if not os.path.exists('logs'):
