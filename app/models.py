@@ -1,4 +1,5 @@
 from datetime import datetime, timezone
+import json
 from time import time
 from hashlib import md5
 from typing import Optional
@@ -8,6 +9,7 @@ import sqlalchemy.orm as so
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
 import jwt
+import redis, rq
 from app.search import add_to_index, remove_from_index, query_index
 
 from app import db    # app is now still the app-package module __init__.py
@@ -97,6 +99,9 @@ class User(UserMixin, db.Model):
     messages_received: so.WriteOnlyMapped['Message'] = so.relationship(
         foreign_keys='Message.recipient_id', back_populates='recipient')
 
+    notifications: so.WriteOnlyMapped['Notification'] = so.relationship(back_populates='user')
+    tasks: so.WriteOnlyMapped['Task'] = so.relationship(back_populates='user')
+
     def __repr__(self):
         return '<User {}>'.format(self.username)
 
@@ -168,6 +173,13 @@ class User(UserMixin, db.Model):
         return db.session.scalar(sa.select(sa.func.count()).select_from(
             query.subquery()))
 
+    def add_notification(self, name, data):
+        db.session.execute(self.notifications.delete().where(
+            Notification.name == name))
+        n = Notification(name=name, payload_json=json.dumps(data), user=self)
+        db.session.add(n)
+        return n
+
 
 class Post(SearchableMixin, db.Model):
 
@@ -209,6 +221,47 @@ class Message(db.Model):
 
     def __repr__(self):
         return '<Message {}>'.format(self.body)
+
+
+class Notification(db.Model):
+
+    __tablename__ = "mb_notifications"
+
+    id: so.Mapped[int] = so.mapped_column(primary_key=True)
+    name: so.Mapped[str] = so.mapped_column(sa.String(128), index=True)
+    user_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey(User.id),
+                                               index=True)
+    timestamp: so.Mapped[float] = so.mapped_column(index=True, default=time)
+    payload_json: so.Mapped[str] = so.mapped_column(sa.Text)
+
+    user: so.Mapped[User] = so.relationship(back_populates='notifications')
+
+    def get_data(self):
+        return json.loads(str(self.payload_json)) 
+
+
+class Task(db.Model):
+
+    __tablename__ = "mb_tasks"
+
+    id: so.Mapped[str] = so.mapped_column(sa.String(36), primary_key=True)
+    name: so.Mapped[str] = so.mapped_column(sa.String(128), index=True)
+    description: so.Mapped[Optional[str]] = so.mapped_column(sa.String(128))
+    user_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey(User.id))
+    complete: so.Mapped[bool] = so.mapped_column(default=False)
+
+    user: so.Mapped[User] = so.relationship(back_populates='tasks')
+
+    def get_rq_job(self):
+        try:
+            rq_job = rq.job.Job.fetch(self.id, connection=current_app.redis)
+        except (redis.exceptions.RedisError, rq.exceptions.NoSuchJobError):
+            return None
+        return rq_job
+
+    def get_progress(self):
+        job = self.get_rq_job()
+        return job.meta.get('progress', 0) if job is not None else 100
 
 
 @login.user_loader
