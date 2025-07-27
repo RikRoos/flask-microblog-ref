@@ -10,6 +10,8 @@ from flask_login import LoginManager
 from flask_moment import Moment
 from config import Config
 from elasticsearch import Elasticsearch
+from redis import Redis
+import rq
 from app.utils import print_console
 
 # creating the extension instances
@@ -46,7 +48,10 @@ def create_app(config_class=Config):
     app.elasticsearch = Elasticsearch(app.config.get('SECRETS_ELASTICSEARCH_URL', None)) \
                             if app.config.get('SECRETS_ELASTICSEARCH_URL', None) else None
 
-    # adding log handlers:
+    app.redis = Redis.from_url(app.config['SECRETS_REDIS_URL'])
+    app.task_queue = rq.Queue('microblog-tasks', connection=app.redis)
+
+    # adding log handlerse:
     if not app.debug and not app.testing and app.config['MAIL_ENABLED']:
         # send email when errors are reported
         auth = None

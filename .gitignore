@@ -1,4 +1,6 @@
 # App specific
+dump.rdb
+start_servers.sh
 dev-app.db
 logs/
 *secrets*.json
