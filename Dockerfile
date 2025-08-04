@@ -6,7 +6,7 @@ RUN pip install gunicorn pymysql cryptography
 
 COPY app app
 COPY migrations migrations
-# COPY *.json ./
+COPY .env.prod .env
 COPY microblog.py config.py boot.sh ./
 RUN chmod a+x boot.sh
 
@@ -19,5 +19,5 @@ RUN chmod a+x boot.sh
 # expose port 5000 
 EXPOSE 5000
 
-# starts the application server, boot.sh accepts arguments
+# starts the application server
 ENTRYPOINT ["./boot.sh"]

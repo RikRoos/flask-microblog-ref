@@ -4,20 +4,19 @@ echo Starting the Microblog app:
 echo  - apply an upgrade to the database
 echo  - then starting the gunicorn webserver
 echo
-echo Using arguments:
-echo $1
-echo $2
+echo Using NO arguments
 
 echo Waiting a few seconds to let the database boot up...
 sleep 10
-echo
 
 while true; do
+    echo Running "flask db upgrade"
     flask db upgrade
     if [[ "$?" == "0" ]]; then
+        echo flask db upgrade finished without exit errorcode
         break
     fi
-    echo Upgrade db-command failed, retrying in 5 secs...
+    echo Upgrade db failed, retrying in 5 secs...
     sleep 5
 done
 
@@ -33,4 +32,8 @@ done
 # with a '-'  (dash), which sends the log to the standard output so that they are
 # stored as logs by Docker.
 #
-#exec gunicorn -b :5000 --access-logfile - --error-logfile - microblog:app
+# The " microblog:app " explained:
+#   microblog is the module to load, in this case microblog.py
+#   app is the name of the applocation instance
+
+exec gunicorn -b :5000 --access-logfile - --error-logfile - microblog:app
