@@ -49,7 +49,7 @@ def load_settings(filename):
         settings = json.load(f)
     return settings
 
-def init_config(*config_filepath):
+def init_config():
 
     def walk_dict_recursive(cfgvars, dict_, grp=""):
         """
